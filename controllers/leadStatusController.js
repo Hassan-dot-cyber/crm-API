@@ -1,4 +1,4 @@
-const { getLeadStatuses ,findAssignedTo , getNonExcludedLeadSources} = require("../models/leadStatusModel");
+const { getLeadStatuses ,findBusinessByDescription} = require("../models/leadStatusModel");
 
 const getAllLeadStatuses = async (req, res) => {
   try {
@@ -12,7 +12,7 @@ const getAllLeadStatuses = async (req, res) => {
 
 
 
-const findAssignedTo = async (req, res) => {
+const getBusinessByDescription = async (req, res) => {
     const { description } = req.query;
   
     if (!description) {
@@ -20,7 +20,7 @@ const findAssignedTo = async (req, res) => {
     }
   
     try {
-      const result = await findAssignedTo(description);
+      const result = await findBusinessByDescription(description);
       if (result.error) {
         return res.status(404).json({ error: result.error });
       }
@@ -31,6 +31,7 @@ const findAssignedTo = async (req, res) => {
     }
   };
 
+  const { getNonExcludedLeadSources } = require("../models/leadSourceModel");
 
   const getLeadSources = async (req, res) => {
     try {
@@ -49,4 +50,4 @@ const findAssignedTo = async (req, res) => {
   
   
 
-module.exports = { getAllLeadStatuses,findAssignedTo ,getLeadSources};
+module.exports = { getAllLeadStatuses,getBusinessByDescription ,getLeadSources};

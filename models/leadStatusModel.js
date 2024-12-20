@@ -71,5 +71,35 @@ const getNonExcludedLeadSources = async () => {
     }
   };
   
-  
-module.exports = { getLeadStatuses , findAssignedTo , getNonExcludedLeadSources};
+
+const getCitiesByDealershipAndState = async (dealershipID, state) => {
+  const pool = await connectToDB;
+
+  try {
+    const query = `
+      SELECT DISTINCT City 
+      FROM Address 
+      INNER JOIN BusinessParty 
+      ON Address.AddressID = BusinessParty.AddressID 
+      AND BusinessParty.BusinessTypeID = 6
+      WHERE BusinessParty.DealershipID = @DealershipID 
+      AND State = @State 
+      AND DATALENGTH(City) > 0 
+      ORDER BY City
+    `;
+
+    const result = await pool
+      .request()
+      .input("DealershipID", sql.Int, dealershipID)
+      .input("State", sql.VarChar, state)
+      .query(query);
+
+    return result.recordset; // Returns the list of cities
+  } catch (err) {
+    console.error("Error fetching cities by dealership and state:", err);
+    throw err;
+  }
+};
+
+
+module.exports = { getLeadStatuses , findAssignedTo , getNonExcludedLeadSources , getCitiesByDealershipAndState};
