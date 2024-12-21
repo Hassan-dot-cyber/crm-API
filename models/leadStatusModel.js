@@ -12,7 +12,7 @@ const getLeadStatuses = async () => {
 // const connectToDB = require("../config/db");
 
 
-const findAssignedTo = async (description) => {
+const FindAssignedTo = async (description) => {
   const pool = await connectToDB;
 
   try {
@@ -101,5 +101,59 @@ const getCitiesByDealershipAndState = async (dealershipID, state) => {
   }
 };
 
+const findSoldAT = async (description) => {
+  const pool = await connectToDB;
 
-module.exports = { getLeadStatuses , findAssignedTo , getNonExcludedLeadSources , getCitiesByDealershipAndState};
+  try {
+    // SQL query to perform all operations in one step
+    const query = `
+      SELECT 
+        bp.BusinessID, 
+        bp.BusinessName 
+      FROM BusinessType bt
+      INNER JOIN BusinessParty bp ON bt.BusinessTypeID = bp.BusinessTypeID
+      INNER JOIN Employee e ON bp.BusinessID = e.EmployeeID
+      WHERE bt.Description = @description AND e.CRM = 1
+    `;
+
+    const result = await pool
+      .request()
+      .input("description", sql.VarChar, description)
+      .query(query);
+
+    if (result.recordset.length === 0) {
+      return { error: "No businesses with CRM enabled" };
+    }
+
+    return result.recordset; // Return matched BusinessID and BusinessName
+  } catch (err) {
+    console.error("Error fetching business by description:", err);
+    throw err;
+  }
+};
+
+
+const getStateData = async () => {
+  const pool = await connectToDB;
+
+  try {
+    // SQL query to get StateCode and StateName
+    const query = `
+      SELECT StateCode, StateName
+      FROM State
+    `;
+
+    const result = await pool.request().query(query);
+
+    if (result.recordset.length === 0) {
+      return { error: "No states found" };
+    }
+
+    return result.recordset; // Return StateCode and StateName
+  } catch (err) {
+    console.error("Error fetching state data:", err);
+    throw err;
+  }
+};
+
+module.exports = { getLeadStatuses , FindAssignedTo , getNonExcludedLeadSources , getCitiesByDealershipAndState , findSoldAT , getStateData};
